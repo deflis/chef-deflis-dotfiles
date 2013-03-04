@@ -1,6 +1,7 @@
 node[:dotfiles][:users].each do |username|
   user_info = Etc.getpwnam(username)
   home_dir = user_info.dir
+  group_name = Etc.getgrgid(user_info.gid).name
   
   git home_dir + "/dotfiles" do
     repository "https://github.com/deflis/dotfiles.git"
@@ -8,13 +9,15 @@ node[:dotfiles][:users].each do |username|
     enable_submodules true
   
     user username
-    group Etc.getgrgid(user_info.gid).name
+    group group_name
     action :sync
   end
   
   [".zshrc", ".vimrc", ".vim", ".zsh", ".gvimrc"].each do |fn|
     link home_dir + "/" + fn do
       to home_dir + "/dotfiles/" + fn
+      user username
+      group group_name
     end
   end
   
